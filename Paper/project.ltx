@@ -1,0 +1,83 @@
+\documentclass[12pt]{report}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{titlesec}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=20mm,
+ top=10mm,
+ }
+\lstset { %
+    language=C,
+    backgroundcolor=\color{black!5}, % set backgroundcolor
+    basicstyle=\large,% basic font setting
+}
+\titleformat{\section}{\Large\bfseries\filcenter}{}{0em}{}
+%\setlength{\parindent}{.5em}
+\author{Nelson Morrow}
+\title{Parallelizing The Discrete Fourier Transform}
+\begin{document}
+\maketitle
+\begin{abstract}
+  The Fourier Transform is used in signal processing to decompose signals into their component frequencies - called the 'fundamentals' by computing a       linear combination of sinusoidal functions. The Fast Fourier Transform is a method of computing the Discrete Fourier Transform that reduces the complex    ity from $O(n^{2})$ to $O(n\log{n})$. For large N, this algorithm is significantly more efficient than DFT. Here, I implement a novel (but naive) implementation of DFT parallelized with OpenMPI and compare its scaling capabilities to Gnu Scientific Libraries FFT.
+\end{abstract}
+\section{Code and Discussion}
+Initially, I attempted to parallelize GSL's implementation of the FFT. This failed (I am certain) because the bitreverse algorithm, which is essential to FFT, maps elements of input arrays with index $k$ to index $n-k$ with $n$ being the length of the signal vector. My attempts to feed GSL's FFT smaller arrays from different nodes created wholly inaccurate transformations. Since I could not do this, I implemented my own version of an FFT - a parallelized DFT. The code that I wrote to parallelize the DFT is below. Notice the call to gsl\_fft\_complex\_radix2\_forward, which I used to verify the correctness of my code.
+\begin{lstlisting}
+static void dft_kernel(double *input, double* sumreal, 
+double* sumimag, int k, int min, int size) {
+  double loc_real_sum = *sumreal;
+  double loc_imag_sum = *sumimag;
+  for (int t = 0; t < size; t++) {  // For each input element
+      double angle = 2 * M_PI * (t+min) * k / N;
+      loc_real_sum +=  REAL(input, t) * cos(angle) +
+      IMAG(input, t)* sin(angle);
+      loc_imag_sum += -REAL(input, t) * sin(angle) + 
+      IMAG(input, t)* cos(angle);
+  }
+  *sumreal = loc_real_sum;
+  *sumimag = loc_imag_sum;
+}
+
+//In function 'main'
+start = omp_get_wtime();
+min =  sharded_arr_size*world_rank;
+for (int k = 0; k < N; k++) {  // For each output element
+  local_real_sum = 0;
+  local_imag_sum = 0;
+  dft_kernel(shard, &local_real_sum, &local_imag_sum,
+  k, min, sharded_arr_size);
+  MPI_Barrier(MPI_COMM_WORLD);
+  MPI_Reduce(&local_real_sum, &global_real_sum, 1, 
+  MPI_DOUBLE, MPI_SUM, 0,MPI_COMM_WORLD);
+  MPI_Reduce(&local_imag_sum, &global_imag_sum, 1, 
+  MPI_DOUBLE, MPI_SUM, 0,MPI_COMM_WORLD);
+  if (world_rank == 0) {
+    REAL(parallel_dft, k) = global_real_sum;
+    IMAG(parallel_dft, k) = global_imag_sum;
+  }
+}
+end = omp_get_wtime();
+times[0]  = end-start;
+
+gsl_fft_complex_radix2_forward (complex_polynomial, 1, N);
+\end{lstlisting}
+
+
+\section{Results}
+  This was a novel implementation of DFT; it is completely inferior to FFT because of the need to synchronize, and at best scaling was $N^{2} / p$ where $p$ is the number of nodes. Comparing the output of the DFT to the FFT in the output/ folder shows that the results are completely identical. It works, but it is not nearly as fast as FFT. Here is output from both functions, confirming the result:
+
+\includegraphics[width=1.0\textwidth]{output.png}
+
+\section{Scaling information}
+  Scaling was actually close to ideal, and the more nodes tasked to the assignment the better the performance. The most time consuming kernel, which I parallelized with dft\_kernel, had a performance increase hindered greatly by synchronizing necessities; for example, MPI\_Barrier() slowed it down greatly. Here are some graphics which make the argument that scaling wasn't too far in fact from ideal - but compared to the FFT on the same dataset each time was comparatively very slow. For example, with $p=32$ nodes the DFT ran at $1.344$ seconds and the FFT ran at $0.005987$ seconds.
+
+\includegraphics[width=0.5\textwidth]{ideal_speeds.png}
+\includegraphics[width=0.5\textwidth]{nodes_speeds.png}
+
+\end{document}

@@ -1,0 +1,37 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\author{Nelson Morrow}
+\title{Homework 10}
+\begin{document}
+\maketitle
+\paragraph{Question 3} 
+Suppose that $C_{0},C_{1},C_{2}...$ is a sequence defined as follows. $$C_{0} = 2$$ $$C_{1} = 2$$ $$C_{2} = 6$$ $$C_{k} = 3C_{k-3}$$
+We will prove the property $P(n)$, that $C_{n}$ is even for all integers $n \geq 0$ with strong mathematical induction.
+First, we must prove our base case by showing that $P(n)$ holds for $C_{0},C_{1},C_{2}$.
+But since $$C_{0} = C_{1} = 2$$ and $$C_{2} = 6$$
+We just need to show that 2 and 6 are even. But since $$2 = 2*1$$ and $$6 = 2*3$$ we can invoke the definition of even to prove this.
+Thus, $P(n)$ holds for our base cases.\*
+Now, suppose that $P(i)$ holds for every integer $i,$ with $ 0 \leq i \leq k$.
+We must show that if our supposition is true then $p(k+1)$ holds.
+$C_{k+1} = 3*C_{k-2}$ and it is important to note that both of these numbers are integers. $C_{k-2}$ is an integer by our supposition, and $C_{k+1}$ is the product of integers, which are closed under scalar multiplication.
+Now, by our supposition $C_{k-2}$ is an even since $P(k-2)$ holds. This means that $C_{k-2} = 2 * b$, where $b$ is some positive integer. By the transitive property of multiplication, $$C_{k+1} = 2 * b * 3$$ and $C_{k+1}$ is even by definition of even. Thus, $P(n)$ holds for all positive integers, $n$.
+\paragraph{Question 9}
+Suppose that $C_{1},C_{2},..., C_{k}$ is defined as follows: $$C_{1} = 1$$$$C_{2} = 3$$$$C_{k} = C_{k-2} + C_{k-1}$$
+
+Where $k \geq 3$. We will use strong mathematical induction to prove the property $P(n)$, that $C_{k} \leq (\frac{7}{4})^{k}$ for all integers $k \geq 0$.
+First, we must prove our base case by showing that $P(k)$ holds for $C_{1}, C_{2}$. But since $C_{1} = 1$ and $(\frac{7}{4})^{1} = (\frac{7}{4})$, it is obvious that $P(1)$ holds. Similarly, $C_{2} = 3$ and $(\frac{7}{4})^{2} = 3\frac{1}{16}$ so it is obvious as well that $P(2)$ holds. Our base cases, then, are proven. \*
+
+Now, suppose that $P(i)$ holds for every integer $i,$ with $ 3 \leq i \leq k$. We must show that if our supposition is true, then $P(k+1)$ holds. By the laws of algebra, $$C_{k+1} = C_{k} + C_{k-1}$$ $$C_{k} \leq (\frac{7}{4})^{k}, C_{k-1} \leq (\frac{7}{4})^{k-1}$$ By substitution, $$C_{k+1} \leq (\frac{7}{4})^{k} + (\frac{7}{4})^{k-1}$$ and in order for our property to hold it must be the case that $$(\frac{7}{4})^{k+1} \geq (\frac{7}{4})^{k-1} + (\frac{7}{4})^{k}$$since $C_{k+1} \leq (\frac{7}{4})^{k+1}$. By the laws of Algebra, $$(\frac{7}{4})*(\frac{7}{4})^{k} \geq (\frac{4}{7})*(\frac{7}{4})^{k} + (\frac{7}{4})^{k}$$ $$(\frac{7}{4})*(\frac{7}{4})^{k} \geq (1 + (\frac{4}{7}))*(\frac{7}{4})^{k}$$
+and since $(\frac{7}{4}) > (1 + \frac{4}{7})$ our inductive step holds, and, therefore, $P(n)$ holds for any integer $n \geq 3$ 
+
+\paragraph{Question 21}
+
+Proof by contradiction, using the well ordering principle.
+
+Suppose there exists an integer $n > 1$, not prime, and not a product of primes.  Let S be the set of all integers that are greater than 1, are not prime, and are not a product of primes.  Then by our supposition, n is an element of S.  That is, S is nonempty.  By the Well-Ordering Principle for the integers, S has a least element, let us call it $m$. 
+But since $m$ is not a product of any primes and not itself a prime, $m = ab$ for some integer choice $m > a,b > 0$ where $a,b$ are not prime. But because of the transitivity property, $a,b$ can not have prime factors. Thus, $m$ can not be the smallest element since $a,b$ both are in set S and are smaller than $m$. Thus, our supposition was false. 
+
+$\therefore$ Every integer greater than 1 is either prime or a product of primes.
+
+\end{document}
