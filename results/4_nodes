@@ -1,0 +1,4 @@
+Timing.
+
+Serial FFT  : 0.006483
+Parallel DFT: 3.651347
